@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %} Workerfy about page {% endblock %}
+{% block links %}
+<link rel="stylesheet" href="{{ url_for('static', filename='about_content.css') }}">
+{% endblock %}
+{% block content %}
+<div class="content">
+  <h2>Workerfy</h2>
+  
+  <br>
+
+
+  <p class="tail">Workerfy, simply workers at your doorstep. </p>
+</div>
+{% endblock %}
