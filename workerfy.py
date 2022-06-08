@@ -1,7 +1,13 @@
 #!/usr/bin/python3
 
+"""
+Workerfy: this is my portfolio project.
+A web app at helps people find civil workers
+"""
+
 from io import BytesIO
-from flask import Flask, redirect, url_for, render_template, request, send_file, flash, session, g, jsonify
+from flask import Flask, redirect, url_for, render_template, request,\
+    send_file, flash, session, g, jsonify
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api, fields, marshal_with
@@ -13,7 +19,12 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 api = Api(app)
 
+
 class workers(db.Model):
+    """
+    This class stores creates a database colunm  for workers
+    """
+
     id = db.Column(db.Integer(), primary_key=True)
     username = db.Column(db.String(), nullable=False, unique=True)
     fullname = db.Column(db.String(), nullable=False)
@@ -27,8 +38,11 @@ class workers(db.Model):
     photos = db.relationship('Photos', backref='ower', lazy=True)
 
 
-
 class Photos(db.Model):
+    """
+    This class stores the images of workers
+    """
+
     id = db.Column(db.Integer(), primary_key=True)
     pic_grp = db.Column(db.String(), nullable=False)
     filename = db.Column(db.String(), nullable=False)
@@ -36,27 +50,28 @@ class Photos(db.Model):
     owner_id = db.Column(db.Integer(), db.ForeignKey('workers.id'))
 
 
-
-
 @app.route('/', strict_slashes=False)
 @app.route('/home', strict_slashes=False)
 def homepage():
     """
-    Home page
+    Route to  Home page
     """
     return render_template("home.html")
 
+
 @app.route('/about', strict_slashes=False)
 def aboutpage():
-    """ The about page """
+    """ Rouye to about page """
 
     return render_template("about.html")
+
 
 @app.route('/team', strict_slashes=False)
 def teampage():
     """ The team page """
-    
+
     return render_template("team.html")
+
 
 @app.route("/worker_account", methods=["POST", "GET"], strict_slashes=False)
 def worker_accountpage():
@@ -79,9 +94,6 @@ def worker_accountpage():
         except:
             flash("User does not exit")
             return render_template("worker_account.html")
-
-
-            
     else:
         return render_template("worker_account.html")
 
@@ -109,18 +121,35 @@ def createWorker():
             image_5 = request.files["image5"]
 
             try:
-                worker = workers(username=username_, fullname=fullname_, password=password_,
-                             email=email_, phone=phone_, phone2=phone2_, Location=location_,
-                             work_field=workerfield_, description=description_)
+                worker = workers(username=username_,
+                                 fullname=fullname_, password=password_,
+                                 email=email_, phone=phone_, phone2=phone2_,
+                                 Location=location_,
+                                 work_field=workerfield_,
+                                 description=description_)
                 db.session.add(worker)
                 db.session.commit()
 
-                profilepic = Photos(pic_grp="profileimage", filename=profilepic_.filename, image=profilepic_.read(), owner_id=worker.id)
-                image1 = Photos(pic_grp="Image_1", filename=image_1.filename, image=image_1.read(), owner_id=worker.id)
-                image2 = Photos(pic_grp="Image_2", filename=image_2.filename, image=image_2.read(), owner_id=worker.id)
-                image3 = Photos(pic_grp="Image_3", filename=image_3.filename, image=image_3.read(), owner_id=worker.id)
-                image4 = Photos(pic_grp="Image_4", filename=image_4.filename, image=image_4.read(), owner_id=worker.id)
-                image5 = Photos(pic_grp="Image_5", filename=image_5.filename, image=image_5.read(), owner_id=worker.id)
+                profilepic = Photos(pic_grp="profileimage",
+                                    filename=profilepic_.filename,
+                                    image=profilepic_.read(),
+                                    owner_id=worker.id)
+                image1 = Photos(pic_grp="Image_1",
+                                filename=image_1.filename,
+                                image=image_1.read(), owner_id=worker.id)
+                image2 = Photos(pic_grp="Image_2",
+                                filename=image_2.filename,
+                                image=image_2.read(), owner_id=worker.id)
+                image3 = Photos(pic_grp="Image_3",
+                                filename=image_3.filename,
+                                image=image_3.read(),
+                                owner_id=worker.id)
+                image4 = Photos(pic_grp="Image_4",
+                                filename=image_4.filename,
+                                image=image_4.read(), owner_id=worker.id)
+                image5 = Photos(pic_grp="Image_5",
+                                filename=image_5.filename,
+                                image=image_5.read(), owner_id=worker.id)
 
                 db.session.add(profilepic)
                 db.session.add(image1)
@@ -133,10 +162,7 @@ def createWorker():
             except:
                 flash("Account already exists")
                 return render_template("worker_account.html")
-                
-            
             return render_template("worker_page.html", workerInfo=worker)
-            
         else:
             return render_template("worker_account.html")
     else:
@@ -147,7 +173,7 @@ def createWorker():
 def login():
     """ login page of user """
 
-    if request.method =="POST":
+    if request.method == "POST":
         if 'user' in session:
             name = session['user']
 
@@ -165,7 +191,6 @@ def login():
                 session['user'] = new
                 name = session['user']
 
-
             if request.form["fullname"] == '':
                 pass
             else:
@@ -173,7 +198,6 @@ def login():
                 worker = workers.query.filter_by(username=name).first()
                 worker.fullname = new
                 db.session.commit()
-
 
             if request.form["passwordcreate"] == '':
                 pass
@@ -285,7 +309,6 @@ def login():
                         photo.image = Image
                         db.session.commit()
 
-
             if request.files["image4"].filename == '':
                 pass
             else:
@@ -299,7 +322,6 @@ def login():
                         photo.filename = newfilename
                         photo.image = Image
                         db.session.commit()
-
 
             if request.files["image5"].filename == '':
                 pass
@@ -315,18 +337,21 @@ def login():
                         photo.image = Image
                         db.session.commit()
 
+            return render_template('login_page.html',
+                                   workerInfo=workers.query.filter_by
+                                   (username=session['user']).first())
+        return render_template('login_page.html',
+                               workerInfo=workers.
+                               query.filter_by(username=session['user'])
+                               .first())
 
-            return render_template('login_page.html', workerInfo=workers.query.filter_by(username=session['user']).first())
-        return render_template('login_page.html', workerInfo=workers.\
-query.filter_by(username=session['user']).first())
-
-
-    
     else:
         if g.user:
-            return render_template('login_page.html', workerInfo=workers.query.filter_by(username=session['user']).first())
+            return render_template('login_page.html',
+                                   workerInfo=workers.query.filter_by
+                                   (username=session['user']).first())
         return redirect(url_for("worker_accountpage"))
-    
+
 
 @app.before_request
 def before_request():
@@ -337,7 +362,7 @@ def before_request():
     if 'user' in session:
         g.user = session['user']
 
-            
+
 @app.route('/delete', methods=["POST"], strict_slashes=False)
 def delete_accout():
     """ deletes worker account """
@@ -351,7 +376,7 @@ def delete_accout():
             session.pop("user", None)
             flash("Account deleted successfully")
             return render_template("worker_account.html")
-    
+
 
 @app.route('/logout', strict_slashes=False)
 def logout():
@@ -360,10 +385,6 @@ def logout():
     session.pop("user", None)
     flash("You logged out")
     return redirect(url_for("worker_accountpage"))
-        
-
-
-
 
 
 @app.route('/image/profilepic/<name>', strict_slashes=False)
@@ -374,63 +395,75 @@ def upload_profile_picture(name):
     images = Worker.photos
     for image in images:
         if image.pic_grp == "profileimage":
-            return send_file(BytesIO(image.image), attachment_filename=image.filename, as_attachment=True)
+            return send_file(BytesIO(image.image),
+                             attachment_filename=image.filename,
+                             as_attachment=True)
         else:
             return None
 
+
 @app.route('/image/image1/<name>', strict_slashes=False)
 def upload_image1(name):
-    """profile picture upload"""
+    """ image2picture upload"""
 
     Worker = workers.query.filter_by(username=name).first()
     images = Worker.photos
     for photo in images:
         if photo.pic_grp == "Image_1":
-            return send_file(BytesIO(photo.image), attachment_filename=photo.filename, as_attachment=True)
-    
+            return send_file(BytesIO(photo.image),
+                             attachment_filename=photo.filename,
+                             as_attachment=True)
+
 
 @app.route('/image/image2/<name>', strict_slashes=False)
 def upload_image2(name):
-    """ picture upload"""
+    """ image1 picture upload"""
     Worker = workers.query.filter_by(username=name).first()
     images = Worker.photos
     for photo in images:
         if photo.pic_grp == "Image_2":
-            return send_file(BytesIO(photo.image), attachment_filename=photo.filename, as_attachment=True)
+            return send_file(BytesIO(photo.image),
+                             attachment_filename=photo.filename,
+                             as_attachment=True)
+
 
 @app.route('/image/image3/<name>', strict_slashes=False)
 def upload_image3(name):
-    """profile picture upload"""
-    
+    """image3 picture upload"""
+
     Worker = workers.query.filter_by(username=name).first()
     images = Worker.photos
     for image in images:
         if image.pic_grp == "Image_3":
-            return send_file(BytesIO(image.image), attachment_filename=image.filename, as_attachment=True)
+            return send_file(BytesIO(image.image),
+                             attachment_filename=image.filename,
+                             as_attachment=True)
 
 
 @app.route('/image/image4/<name>', strict_slashes=False)
 def upload_image4(name):
     """profile picture upload"""
+
     Worker = workers.query.filter_by(username=name).first()
     images = Worker.photos
     for photo in images:
         if photo.pic_grp == "Image_4":
-            return send_file(BytesIO(photo.image), attachment_filename=photo.filename, as_attachment=True)
-        
+            return send_file(BytesIO(photo.image),
+                             attachment_filename=photo.filename,
+                             as_attachment=True)
+
 
 @app.route('/image/image5/<name>', strict_slashes=False)
 def upload_image5(name):
     """profile picture upload"""
-    
+
     Worker = workers.query.filter_by(username=name).first()
     images = Worker.photos
     for image in images:
         if image.pic_grp == "Image_5":
-            return send_file(BytesIO(image.image), attachment_filename=image.filename, as_attachment=True)
-
-
-            
+            return send_file(BytesIO(image.image),
+                             attachment_filename=image.filename,
+                             as_attachment=True)
 
 
 @app.route('/explore', strict_slashes=False)
@@ -438,8 +471,16 @@ def explorepage():
     """ The explore page """
 
     allWorkers = workers.query.all()
-    
+
     return render_template("explore.html", Allworkers=allWorkers)
+
+
+@app.route('/landingPage', strict_slashes=False)
+def landingpage():
+    """ The landing page """
+
+    return render_template("landing.html")
+
 
 @app.route('/discretion', strict_slashes=False)
 def advicepage():
@@ -460,13 +501,15 @@ resource_fields = {
     'description': fields.String,
 }
 
+
 class filterByField(Resource):
     @marshal_with(resource_fields)
     def get(self, field):
         Workers = workers.query.filter_by(work_field=field).all()
         return Workers
-api.add_resource(filterByField, "/api/explore/workers/<string:field>")
 
+
+api.add_resource(filterByField, "/api/explore/workers/<string:field>")
 
 
 class filterByLocation(Resource):
@@ -474,6 +517,8 @@ class filterByLocation(Resource):
     def get(self, location):
         Workers = workers.query.filter_by(Location=location).all()
         return Workers
+
+
 api.add_resource(filterByLocation, "/api/explore/workersLoc/<string:location>")
 
 
@@ -482,15 +527,21 @@ class filterAll(Resource):
     def get(self):
         Workers = workers.query.all()
         return Workers
+
+
 api.add_resource(filterAll, "/api/explore/workers")
 
 
 class filterByLnF(Resource):
     @marshal_with(resource_fields)
     def get(self, location, field):
-        Workers = workers.query.filter((workers.work_field == field) & (workers.Location == location)).all()
+        Workers = workers.query.filter((workers.work_field == field)
+                                       & (workers.Location == location)).all()
         return Workers
-api.add_resource(filterByLnF, "/api/explore/workers/<string:location>/<string:field>")
+
+
+api.add_resource(filterByLnF,
+                 "/api/explore/workers/<string:location>/<string:field>")
 
 
 if __name__ == "__main__":
