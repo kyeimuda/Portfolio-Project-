@@ -53,4 +53,22 @@ I will like to appreciate writers and creaters of some articles and videos that 
 * Easy Tutorials - also very helpful with the front-end
 * Dani Krossing - JQuery, AJAX and Javascript
 * Tech with Tim - Awesome Flask tutorials
-* freeCodeCamp.org - flask course. 
+* freeCodeCamp.org - flask course.
+
+### The truth behind me and workerfy
+
+I have been a technology enthusiast since I was born. I have always dreamt of creating something that could change some difficult issues we face in our world, to make our world a better place. But my education path through me off my rails and ended up getting my first degree in Business Administration which i am proud of but technology is my passion that why I am not working but to fulfil my dreams. And that is my background.
+
+Just a few years ago during the time of my National Service, one morning on my way to work, i found something unfamiliar with our water closet, the water level was so high i couldn’t go to work without solving that problem. But there was a second problem, I needed a plumber but same time I was running late to for work. I was caught in the dilemma of finding a plumber now or find the plumber after work. But the water closet could get worse. This got me thinking and made me conceptualise what if there was a mobile application that could help me find a worker even on my way to work. This was the beginning of Workerfy. The application that would help people find workers at ease and at any point in time. With my undying love to create I decided to take a course in software engineering to make this concept a reality. And today Workerfy has initialized.
+
+##### Experiencing my full-stack ability
+In this Workerfy portfolio project, the frontend was built using HTML5, CSS3, Javascript and the python flask framework. For the backend I used a SQLLITE database system with SQLALCHEMY and also built my API’s with the flask_RESTful python module.
+
+##### What really got me  stack
+I wanted to have a feature where users can see pictures of the workers work as a prove of truth. The images data collection was saved in a database. Now i was face with the challenge of how to show the images on the pages from the database. First I thought there would be a regular query for the images to be passed to a variable but wasn’t the case. I search online for so many hours I was even about to give up, then i found a tutorial on how to return images from a database with a return send_file. Send_file is a function that sends the file to a client with a request url. I took advantage of this to create routes for all the images of a worker and passed the route as the source of the images to the src attributes in the img tags in the html files.
+
+##### My Experience through the making
+This portfolio project has thought me alot. At first I thought I had it all with what I knew and will be able to build easily. But during and after the project i have realised i need more than what I know now and still have to learn more. I have come to realise software engineering is not an easy field, the ton of knowledge one has reflects what you can actually do or build. For myself, I have noticed I will not rest if the code does not work. I have spent over 10 hours trying to figure out a codes bugs whilst I could have pause to do other aspects. I know I am going to be a wonderful software engineer.
+
+##### Bernard Kyei Mensah
+Once again, my name is Bernard Kyei Mensah, I am a wonderful soul, hard working and will not move if the code does not work. Thank you.
