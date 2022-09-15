@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 """
 Workerfy: this is my portfolio project.
@@ -10,7 +10,13 @@ from flask import Flask, redirect, url_for, render_template, request,\
     send_file, flash, session, g, jsonify
 import os
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 from flask_restful import Resource, Api, fields, marshal_with
+from sqlalchemy.sql.expression import func
+import redis
+import json
+import pickle
+
 
 app = Flask(__name__)
 app.secret_key = "Kyeimuda12@*"
@@ -18,7 +24,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///workerfy_db.db'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 api = Api(app)
-
+bcrypt = Bcrypt(app)
+r = redis.Redis()
 
 class workers(db.Model):
     """
@@ -85,9 +92,11 @@ def worker_accountpage():
         try:
             Worker = workers.query.filter_by(username=username).first()
 
-            if Worker.username == username and Worker.password == password:
+            if Worker.username == username and bcrypt.check_password_hash(Worker.password, password):
                 session['user'] = username
-                return redirect(url_for("login"))
+                return render_template('login_page.html',
+                                       workerInfo=workers.query.filter_by
+                                       (username=session['user']).first())
             else:
                 flash("User does not exist")
                 return render_template("worker_account.html")
@@ -95,6 +104,10 @@ def worker_accountpage():
             flash("User does not exit")
             return render_template("worker_account.html")
     else:
+        if g.user:
+            return render_template('login_page.html',
+                                   workerInfo=workers.query.filter_by
+                                   (username=session['user']).first())
         return render_template("worker_account.html")
 
 
@@ -102,11 +115,12 @@ def worker_accountpage():
 def createWorker():
     """ creates user in database """
 
+    passed = bcrypt.generate_password_hash(request.form["passwordcreate"])
     if request.method == "POST":
         if request.form["usernamecreate"]:
             username_ = request.form["usernamecreate"]
             fullname_ = request.form["fullname"]
-            password_ = request.form["passwordcreate"]
+            password_ = passed
             email_ = request.form["email"]
             phone_ = request.form["phone"]
             phone2_ = request.form["otherPhone"]
@@ -384,7 +398,7 @@ def logout():
 
     session.pop("user", None)
     flash("You logged out")
-    return redirect(url_for("worker_accountpage"))
+    return render_template("worker_account.html")
 
 
 @app.route('/image/profilepic/<name>', strict_slashes=False)
@@ -469,10 +483,54 @@ def upload_image5(name):
 @app.route('/explore', strict_slashes=False)
 def explorepage():
     """ The explore page """
+    from sqlalchemy.sql.expression import func
+    import math
 
-    allWorkers = workers.query.all()
+    lista = []
+    dicta = {}
 
-    return render_template("explore.html", Allworkers=allWorkers)
+    if (r.get("explorePage") != None):
+        page = request.args.get("page", 1, type = int)
+        showPerPage = 4
+        
+        allWorkers = json.loads(r.get("explorePage"))
+        workersT = allWorkers["workers"]
+
+        pages = math.ceil(len(workersT) / showPerPage)
+
+        trimStart = (page - 1) * showPerPage
+        trimEnd = trimStart + showPerPage
+
+        trimmedWorkers = workersT[trimStart : trimEnd]
+
+        return render_template("explore.html", trimmedWorkers=trimmedWorkers, trimmedPage=page, trimmedpages=pages)
+        
+    else:
+        page = request.args.get("page", 1, type = int)
+    
+        allWorkers = workers.query.order_by(func.random()).paginate(per_page=5)
+        kers = workers.query.order_by(func.random())
+        for a in kers:
+            dicta = {
+                'id' : a.id,
+                'username' : a.username,
+                'work_field' : a.work_field,
+                'Location' : a.email,
+                'phone' : a.phone,
+                'phone2' : a.phone2,
+                'description' : a.description
+            }
+            lista.append(dicta)
+        
+        readyList = {
+            'workers' : lista
+        }
+        readyForRedis = json.dumps(readyList)
+
+        r.set("explorePage", readyForRedis)
+        r.expire("explorePage", 1200)
+            
+        return render_template("explore.html", Allworkers=allWorkers)
 
 
 @app.route('/landingPage', strict_slashes=False)
@@ -505,7 +563,34 @@ resource_fields = {
 class filterByField(Resource):
     @marshal_with(resource_fields)
     def get(self, field):
-        Workers = workers.query.filter_by(work_field=field).all()
+        lista = []
+        dicta = {}
+        if (r.get(field) != None):
+            WorkerT = json.loads(r.get(field))
+            Workers = WorkerT["workers"]
+        else:
+            Workers = workers.query.filter_by(work_field=field).order_by(func.random()).all()
+            if Workers != None:
+                for a in Workers:
+                    dicta = {
+                        'id' : a.id,
+                        'username' : a.username,
+                        'work_field' : a.work_field,
+                        'Location' : a.email,
+                        'phone' : a.phone,
+                        'phone2' : a.phone2,
+                        'description' : a.description
+                    }
+                    lista.append(dicta)
+
+        
+                readyList = {
+                    'workers' : lista
+                }
+                readyForRedis = json.dumps(readyList)
+            
+                r.set(field, readyForRedis)
+                r.expire(field, 1200)
         return Workers
 
 
@@ -515,7 +600,34 @@ api.add_resource(filterByField, "/api/explore/workers/<string:field>")
 class filterByLocation(Resource):
     @marshal_with(resource_fields)
     def get(self, location):
-        Workers = workers.query.filter_by(Location=location).all()
+        lista = []
+        dicta = {}
+        if (r.get(location) != None):
+            WorkerT = json.loads(r.get(location))
+            Workers = WorkerT["workers"]
+        else:
+            Workers = workers.query.filter_by(Location=location).order_by(func.random()).all()
+            if Workers != None:
+                for a in Workers:
+                    dicta = {
+                        'id' : a.id,
+                        'username' : a.username,
+                        'work_field' : a.work_field,
+                        'Location' : a.email,
+                        'phone' : a.phone,
+                        'phone2' : a.phone2,
+                        'description' : a.description
+                    }
+                    lista.append(dicta)
+
+        
+                readyList = {
+                    'workers' : lista
+                }
+                readyForRedis = json.dumps(readyList)
+            
+                r.set(location, readyForRedis)
+                r.expire(location, 1200)
         return Workers
 
 
@@ -525,8 +637,36 @@ api.add_resource(filterByLocation, "/api/explore/workersLoc/<string:location>")
 class filterAll(Resource):
     @marshal_with(resource_fields)
     def get(self):
-        Workers = workers.query.all()
+        lista = []
+        dicta = {}
+        if (r.get("ALL") != None):
+            WorkerT = json.loads(r.get("ALL"))
+            Workers = WorkerT["workers"]
+        else:
+            Workers = workers.query.order_by(func.random()).all()
+            if Workers != None:
+                for a in Workers:
+                    dicta = {
+                        'id' : a.id,
+                        'username' : a.username,
+                        'work_field' : a.work_field,
+                        'Location' : a.email,
+                        'phone' : a.phone,
+                        'phone2' : a.phone2,
+                        'description' : a.description
+                    }
+                    lista.append(dicta)
+
+        
+                readyList = {
+                    'workers' : lista
+                }
+                readyForRedis = json.dumps(readyList)
+            
+                r.set("ALL", readyForRedis)
+                r.expire("ALL", 1200)
         return Workers
+
 
 
 api.add_resource(filterAll, "/api/explore/workers")
@@ -535,9 +675,36 @@ api.add_resource(filterAll, "/api/explore/workers")
 class filterByLnF(Resource):
     @marshal_with(resource_fields)
     def get(self, location, field):
-        Workers = workers.query.filter((workers.work_field == field)
-                                       & (workers.Location == location)).all()
+        lista = []
+        dicta = {}
+        if (r.get(location + field) != None):
+            WorkerT = json.loads(r.get(location + field))
+            Workers = WorkerT["workers"]
+        else:
+            Workers = workers.query.filter((workers.work_field == field) & (workers.Location == location)).order_by(func.random()).all()
+            if Workers != None:
+                for a in Workers:
+                    dicta = {
+                        'id' : a.id,
+                        'username' : a.username,
+                        'work_field' : a.work_field,
+                        'Location' : a.email,
+                        'phone' : a.phone,
+                        'phone2' : a.phone2,
+                        'description' : a.description
+                    }
+                    lista.append(dicta)
+
+        
+                readyList = {
+                    'workers' : lista
+                }
+                readyForRedis = json.dumps(readyList)
+            
+                r.set(location + field, readyForRedis)
+                r.expire(location + field, 1200)
         return Workers
+
 
 
 api.add_resource(filterByLnF,

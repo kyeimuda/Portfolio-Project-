@@ -232,9 +232,49 @@
     background-position: center;
 }
 
+#pagebtnpage{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 30%;
+    height: 2%;
+    border: 2px solid #000000;
+    padding: 2%;
+    margin: 1%;
+}
+
+#pagebtnpage a{
+    display: flex;
+    justify-content: center;
+    border: 2px solid #000000;
+    padding: 2%;
+    width: 10%;
+    background: rgb(255,255,255,1.0);
+    text-decoration: none;
+    color: black;
+}
+
+#pagebtnpage a#currentPage{
+    color: blue;
+    background: rgb(10,237,193,1.0);
+}
 
 
+#pagebtnpage button{
+    display: flex;
+    justify-content: center;
+    border: 2px solid #000000;
+    padding: 2%;
+    width: 10%;
+    background: rgb(255,255,255,1.0);
+    text-decoration: none;
+    color: black;
+}
 
+#pagebtnpage button#currentPage{
+    color: blue;
+    background: rgb(10,237,193,1.0);
+}
 
 @media(max-width: 700px){
     .holder{
